@@ -1,0 +1,41 @@
+---
+title: "FINAL"
+output: html_document
+---
+```{r, echo=FALSE}
+library(RMySQL);
+library(DBI);
+```
+
+```{r, echo=FALSE}
+connection = dbConnect(MySQL(),user="ddaiteam14_fall17", password="Ilyequed}orf", 
+                dbname="ddaiteam14_fall17", host="mysql.rcc.uchicago.edu");
+```
+
+Selecting a dataframe for analysis
+```{r}
+myQuery <- 
+"SELECT DISTINCT Daily_Price, neighbourhood, Property_Type, Room_Type, Bathroom_Quantity, Bedroom_Quantity, Bed_Quantity, Listing_Cancellation_Policy   
+FROM 
+	Fact_Rental R
+		INNER JOIN
+  Listing Li ON R.Listing_ID=Li.Listing_ID
+		INNER JOIN
+	Location Lo ON Li.Location_id = Lo.Location_id
+WHERE Listing_Cancellation_Policy IN ('strict', 'flexible', 'moderate')
+		AND Property_Type IN ('Apartment', 'House', 'Bed & Breakfast')"
+dbGetQuery(connection, myQuery)
+dat <- data.frame(dbGetQuery(connection, myQuery));
+```
+
+Pricing Model
+```{r}
+AirbnbPricingModel <- lm(Daily_Price ~ neighbourhood + Property_Type + Room_Type + Bathroom_Quantity + Bedroom_Quantity + Bed_Quantity + Listing_Cancellation_Policy, data = dat)
+summary(AirbnbPricingModel)
+```
+
+```{r}
+summary(AirbnbPricingModel)$coefficients
+```
+
+
